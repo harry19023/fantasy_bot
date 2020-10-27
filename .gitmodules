@@ -1,6 +1,0 @@
-[submodule "activity_bot/espn-api"]
-	path = activity_bot/espn-api
-	url = https://github.com/harry19023/espn-api
-[submodule "free_agent_bot/espn-api"]
-	path = free_agent_bot/espn-api
-	url = https://github.com/harry19023/espn-api
