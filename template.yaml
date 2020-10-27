@@ -17,6 +17,8 @@ Resources:
     Properties:
       CodeUri: free_agent_bot/
       Handler: app.waiver_check
+      Layers:
+        - !Ref ESPNAPILayer
       Role: !GetAtt LambdaExecutionRole.Arn
       Events:
         DailyWaiverCheck:
@@ -33,6 +35,11 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
+  ESPNAPILayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      ContentUri: espn-api
+      LayerName: espn-api-layer
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
