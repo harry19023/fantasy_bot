@@ -1,0 +1,3 @@
+[submodule "activity_bot/espn-api"]
+	path = activity_bot/espn-api
+	url = https://github.com/harry19023/espn-api

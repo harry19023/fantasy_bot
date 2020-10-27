@@ -1,0 +1,67 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  AWS
+
+  Sample SAM Template for AWS
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 900
+    Runtime: python3.7
+
+Resources:
+  WaiverFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: free_agent_bot/
+      Handler: app.waiver_check
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        DailyWaiverCheck:
+          Type: Schedule
+          Properties:
+            # Schedule: rate(10 minutes)  # every 10 minutes
+            Schedule: cron(0 10 * * ? *)  # every day at 10 AM UTC
+  LeagueTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: league_id
+        Type: Number
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AWSLambdaFullAccess"
+      AssumeRolePolicyDocument: {
+        "Version": "2012-10-17",
+        "Statement": [
+        {
+          "Effect": "Allow",
+          "Principal": {
+            "Service": [
+              "lambda.amazonaws.com"
+            ]
+          },
+          "Action": [
+            "sts:AssumeRole"
+          ]
+        }
+        ]
+      }
+
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  WaiverdFunction:
+    Description: "Function which posts waiver results"
+    Value: !GetAtt WaiverFunction.Arn
+  WaiverdFunctionIamRole:
+    Description: "IAM Role created for Waiver function"
+    Value: !GetAtt LambdaExecutionRole.Arn
