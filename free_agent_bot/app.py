@@ -4,11 +4,11 @@ from espn_api.football import League
 
 db = boto3.client('dynamodb')
 tablename = 'ff-espn-bot-LeagueTable-1LNQVCZV3UU3M'
-
+espn_username = 'harry19023@gmail.com'
+espn_password = 'ETOkoF0YdWY4a'
+groupme_endpoint = 'https://api.groupme.com/v3/bots/post'
 
 def waiver_check(event, context):
-
-    groupme_endpoint = 'https://api.groupme.com/v3/bots/post'
     # leagues = {1414578: 'e0d734b87ec92d3d8af6ec965d',  # Kober
     #            777493: 'f0d5e4b7e448b15b5a851172c7',  # DHFFL
     #            932584: 'd1b3fe1d481235ff4f4b85067c',  # Wheaton
@@ -27,9 +27,7 @@ def waiver_check(event, context):
         bot_id = league_data['bot_id']
         last_report_time = league_data['last_report_time']
         year = 2020
-        username = 'harry19023@gmail.com'
-        password = 'ETOkoF0YdWY4a'
-        league = League(league_id, year, username, password)
+        league = League(league_id, year, espn_username, espn_password)
 
         reports = league.free_agent_auction_report()
         if reports == 'There were no free agent auctions this week':
@@ -41,18 +39,23 @@ def waiver_check(event, context):
             print('Same report as last time. League: {} Time: {}'.format(league_id, time))
             continue
 
-
         messages = []
-        message = ''
+        message = f'Free Agent Report for {time.strftime("%a, %b %d")}\n\n'
+        message_chunk = ''
         for line in report.split('\n'):
             if line == '':
-                message += '\n\n'
+                message_chunk += '\n\n'
+                message += message_chunk
+                message_chunk = ''
                 continue
-            if len(line) + len(message) <= 1000:
-                message += line + '\n'
+            if len(line) + len(message_chunk) + len(message) <= 1000:
+                message_chunk += line + '\n'
             else:
                 messages.append(message)
-                message = line + '\n'
+                message = message_chunk + line + '\n'
+                message_chunk = ''
+        if message_chunk != '':
+            message += message_chunk
         messages.append(message)
 
         responses = []
