@@ -19,6 +19,7 @@ Resources:
       Handler: app.waiver_check
       Layers:
         - !Ref ESPNAPILayer
+        - !Ref PIPLayer
       Role: !GetAtt LambdaExecutionRole.Arn
       Events:
         DailyWaiverCheck:
@@ -40,6 +41,15 @@ Resources:
     Properties:
       ContentUri: espn-api
       LayerName: espn-api-layer
+  PIPLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      ContentUri: pip_libraries
+      LayerName: fantasy-bot-pip-layer
+      CompatibleRuntimes:
+        - python3.7
+    Metadata:
+      BuildMethod: python3.7
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
