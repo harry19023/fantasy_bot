@@ -29,14 +29,12 @@ def make_matplotlib_table(data, cols, colors, filename):
     table.set_fontsize(14)
     table.auto_set_column_width([0, 1, 2, 3])
     plt.gcf().set_size_inches(7.5, 6)
-    # filename = '/tmp/{}'.format(os.path.basename(filename))
-    filename = '{}'.format(os.path.basename(filename))
+    filename = '/tmp/{}'.format(os.path.basename(filename))
     plt.gcf().savefig(filename, transparent=False)
 
 
 def post_pic_to_groupme(filename, message, bot_id):
-    # filename = '/tmp/{}'.format(os.path.basename(filename))
-    filename = '{}'.format(os.path.basename(filename))
+    filename = '/tmp/{}'.format(os.path.basename(filename))
     pic = open('{}.png'.format(filename), 'rb').read()
     headers = {'X-Access-Token': access_token, 'Content-Type': 'image/png'}
     r = requests.post('https://image.groupme.com/pictures', data=pic, headers=headers)
