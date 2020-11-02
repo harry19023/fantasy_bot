@@ -2,3 +2,4 @@ venv/*
 .idea/*
 .aws-sam/*
 pip_libraries/python/*
+*.png
