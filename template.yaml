@@ -35,6 +35,7 @@ Resources:
       Layers:
         - !Ref ESPNAPILayer
         - !Ref PIPLayer
+      MemorySize: 192
       Role: !GetAtt LambdaExecutionRole.Arn
       Events:
         ThursdayScrambleCheck:
