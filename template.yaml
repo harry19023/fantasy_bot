@@ -27,6 +27,32 @@ Resources:
           Properties:
             # Schedule: rate(10 minutes)  # every 10 minutes
             Schedule: cron(0 10 * * ? *)  # every day at 10 AM UTC
+  ScrambleFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: scramble_bot/
+      Handler: app.scramble_handler
+      Layers:
+        - !Ref ESPNAPILayer
+        - !Ref PIPLayer
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        ThursdayScrambleCheck:
+          Type: Schedule
+          Properties:
+            Schedule: cron(30 5 ? * 5 *)  # Friday 5:30 AM PST (Thursday 9:30 PM PST)
+        SundayScramble1Check:
+          Type: Schedule
+          Properties:
+            Schedule: cron(0/30 18-23 ? * 0 *)  # Every 30 mins 6:30PM- midnight UTC (10:30AM-4:00PM PST)
+        SundayScramble2Check:
+          Type: Schedule
+          Properties:
+            Schedule: cron(0/30 0-5 ? * 1 *)  # Every 30 mins midnight - 5:30 UTC (4PM-9:30PM PST)
+        MondayScrambleCheck:
+          Type: Schedule
+          Properties:
+            Schedule: cron(0/30 1-5 ? * 2 *)  # Every 30 mins midnight - 5:30 UTC (5PM- 9:30PM PST)
   LeagueTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
