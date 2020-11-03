@@ -49,11 +49,11 @@ Resources:
         SundayScramble2Check:
           Type: Schedule
           Properties:
-            Schedule: cron(0 0-5 ? * 2 *)  # Every 30 mins midnight - 5:30 UTC (4PM-9:30PM PST Sunday)
+            Schedule: cron(0 0-5 ? * 2 *)  # Every hour midnight - 5:30 UTC (4PM-9:00PM PST Sunday)
         MondayScrambleCheck:
           Type: Schedule
           Properties:
-            Schedule: cron(0 1-5 ? * 3 *)  # Every 30 mins midnight - 5:30 UTC (5PM- 9:30PM PST Monday)
+            Schedule: cron(0 1-5 ? * 3 *)  # Every hour 1AM - 5:30AM UTC (5PM- 9:00PM PST Monday)
   LeagueTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
