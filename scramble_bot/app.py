@@ -1,8 +1,9 @@
 import datetime
-from dateutil import tz
+from time import time
 import os
 
 import boto3
+from dateutil import tz
 import matplotlib.pyplot as plt
 import requests
 
@@ -115,7 +116,9 @@ def scramble_update(leagues):
         colors = [green_colors for x in range(int(len(teams) / 2))]
         red_colors = [(1.0, 0.0, 0.0) for x in range(4)]
         colors.extend([red_colors for x in range(int(len(teams) / 2))])
-        make_matplotlib_table(data, cols, colors, 'scramble')
+
+        filename = f'scramble_{int(time())}'
+        make_matplotlib_table(data, cols, colors, filename)
 
         # post to groupme
         from_zone = tz.gettz('UTC')
@@ -126,7 +129,7 @@ def scramble_update(leagues):
         current_time = current_time.strftime('%I:%M %p')
 
         message = 'Scramble as of {} PST'.format(current_time)
-        post_pic_to_groupme('scramble', message, bot_id)
+        post_pic_to_groupme(filename, message, bot_id)
 
         # calculate standings
         for i, team in enumerate(teams):
@@ -190,19 +193,14 @@ def test_scramble(real=False):
                    }
     else:
         leagues = {777493: {'bot_id': test_bot_id,
-                            'scramble_weeks': [12],
+                            'scramble_weeks': [13],
                             'wildcard': True,
                             'playoff_teams': 6},  # DHFFL
                    932584: {'bot_id': test_bot_id,
-                            'scramble_weeks': [4, 8, 12],
+                            'scramble_weeks': [4, 8, 12, 13],
                             'wildcard': False,
                             'playoff_teams': 4},  # STL
-                   1846399: {'bot_id': test_bot_id,
-                             'scramble_weeks': [12],
-                             'wildcard': False,
-                             'playoff_teams': 6}  # BSB
                    }
-
     scramble_update(leagues)
 
 
