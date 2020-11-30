@@ -27,6 +27,20 @@ Resources:
           Properties:
             # Schedule: rate(10 minutes)  # every 10 minutes
             Schedule: cron(0 10 * * ? *)  # every day at 10 AM UTC
+  ESPNAPITesterFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: espn-progress-api-tester/
+      Handler: app.tester
+      Layers:
+        - !Ref PIPLayer
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        DailyWaiverCheck:
+          Type: Schedule
+          Properties:
+            # Schedule: rate(10 minutes)  # every 10 minutes
+            Schedule: cron(0/5 1-5 ? * 3 *)  # Every 5 minutes 1AM - 5:30AM UTC (5PM- 9:00PM PST Monday)
   ScrambleFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
