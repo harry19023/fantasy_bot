@@ -3,3 +3,4 @@ venv/*
 .aws-sam/*
 pip_libraries/python/*
 *.png
+*.DS_Store
