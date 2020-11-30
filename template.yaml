@@ -59,7 +59,7 @@ Resources:
         SundayScramble1Check:
           Type: Schedule
           Properties:
-            Schedule: cron(0 18-23 ? * 1 *)  # Every 30 mins 6:30PM- midnight Sunday UTC (10:30AM-4:00PM PST)
+            Schedule: cron(0 18-23 ? * 1 *)  # Every hour 6:30PM- midnight Sunday UTC (10:30AM-4:00PM PST)
         SundayScramble2Check:
           Type: Schedule
           Properties:
