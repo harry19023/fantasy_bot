@@ -40,7 +40,7 @@ Resources:
           Type: Schedule
           Properties:
             # Schedule: rate(10 minutes)  # every 10 minutes
-            Schedule: cron(0/5 1-5 ? * 3 *)  # Every 5 minutes 1AM - 5:30AM UTC (5PM- 9:00PM PST Monday)
+            Schedule: cron(0/5 18-19 ? * 1 *)  # Every 5 minutes 6:00PM-8:00PM Sunday UTC (10:00AM-12:00PM PST)
   ScrambleFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
