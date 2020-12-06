@@ -40,7 +40,7 @@ Resources:
           Type: Schedule
           Properties:
             # Schedule: rate(10 minutes)  # every 10 minutes
-            Schedule: cron(0/30 18-23 ? * 1 *)  # Every 5 minutes 6:00PM-8:00PM Sunday UTC (10:00AM-12:00PM PST)
+            Schedule: cron(0/10 18-23 ? * 1 *)  # Every 5 minutes 6:00PM-8:00PM Sunday UTC (10:00AM-12:00PM PST)
         DailyWaiverCheck2:
           Type: Schedule
           Properties:
