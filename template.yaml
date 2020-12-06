@@ -40,12 +40,12 @@ Resources:
           Type: Schedule
           Properties:
             # Schedule: rate(10 minutes)  # every 10 minutes
-            Schedule: cron(0/30 18-19 ? * 1 *)  # Every 5 minutes 6:00PM-8:00PM Sunday UTC (10:00AM-12:00PM PST)
+            Schedule: cron(0/30 18-23 ? * 1 *)  # Every 5 minutes 6:00PM-8:00PM Sunday UTC (10:00AM-12:00PM PST)
         DailyWaiverCheck2:
           Type: Schedule
           Properties:
             # Schedule: rate(10 minutes)  # every 10 minutes
-            Schedule: cron(0/10 0-5 ? * 2 *)  # Every ten minutes midnight - 5:30 UTC (4PM-9:00PM PST Sunday)
+            Schedule: cron(0/10 0-5 ? * 2 *)  # Every ten minutes idnight - 5:30 UTC (4PM-9:00PM PST Sunday)
   ScrambleFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
