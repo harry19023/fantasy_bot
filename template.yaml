@@ -45,7 +45,7 @@ Resources:
           Type: Schedule
           Properties:
             # Schedule: rate(10 minutes)  # every 10 minutes
-            Schedule: cron(0/10 0-5 ? * 2 *)  # Every ten minutes idnight - 5:30 UTC (4PM-9:00PM PST Sunday)
+            Schedule: cron(0/10 0-4 ? * 2 *)  # Every ten minutes idnight - 5:30 UTC (4PM-9:00PM PST Sunday)
   ScrambleFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -68,11 +68,11 @@ Resources:
         SundayScramble2Check:
           Type: Schedule
           Properties:
-            Schedule: cron(0/30 0-5 ? * 2 *)  # Every hour midnight - 5:30 UTC (4PM-9:00PM PST Sunday)
+            Schedule: cron(0/30 0-4 ? * 2 *)  # Every hour midnight - 5:30 UTC (4PM-9:00PM PST Sunday)
         MondayScrambleCheck:
           Type: Schedule
           Properties:
-            Schedule: cron(0/30 1-5 ? * 3 *)  # Every hour 1AM - 5:30AM UTC (5PM- 9:00PM PST Monday)
+            Schedule: cron(0 0-5 ? * 3 *)  # Every hour 1AM - 5:30AM UTC (5PM- 9:00PM PST Monday)
   LeagueTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
