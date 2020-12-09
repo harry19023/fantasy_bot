@@ -9,7 +9,6 @@ import requests
 
 from espn_api.football import League
 
-
 db = boto3.client('dynamodb')
 tablename = 'ff-espn-bot-LeagueTable-1LNQVCZV3UU3M'
 espn_username = 'harry19023@gmail.com'
@@ -29,6 +28,17 @@ def make_matplotlib_table(data, cols, colors, filename):
     table.auto_set_font_size(False)
     table.set_fontsize(14)
     table.auto_set_column_width([0, 1, 2, 3])
+
+    if len(data[0]) > 3:  # only for the points table, not standings
+        cellDict = table.get_celld()
+        big_rows = {}
+        for i, row in enumerate(data):
+            if row[3].count(',') > 0:
+                big_rows[i] = row[3].count(',') + 1
+        for row in big_rows:
+            for i in range(4):
+                cellDict[(row + 1, i)].set_height((big_rows[row] / (len(data) + 1)) * .75)
+
     plt.gcf().set_size_inches(7.5, 6)
     filename = '/tmp/{}'.format(os.path.basename(filename))
     plt.gcf().savefig(filename, transparent=False)
@@ -45,6 +55,26 @@ def post_pic_to_groupme(filename, message, bot_id):
 
 
 def scramble_handler(event, context):
+    # decide if we should do projected (sunday early and late games) or actual
+    # points (SNF, monday, tuesday games)
+    from_zone = tz.gettz('UTC')
+    to_zone = tz.gettz('America/Los_Angeles')
+    current_time = datetime.datetime.today()
+    current_time = current_time.replace(tzinfo=from_zone)
+    current_time = current_time.astimezone(to_zone)
+    if current_time.isoweekday() in [1, 2]:  # Monday or Tuesday
+        actual_points = True
+    elif current_time.isoweekday() != 0:  # Wed, Thurs, Fri, Sat
+        actual_points = False
+    elif current_time.hour < 17:  # Sunday before 5 PM PST
+        actual_points = False
+    else:  # Sunday after 5 PM PST
+        actual_points = True
+    current_time = current_time.strftime('%I:%M %p')
+    print(current_time)
+    if 'test' in event:
+        test_scramble(False, actual_points)
+        return
     results = db.scan(TableName=tablename, Select='ALL_ATTRIBUTES')['Items']
 
     leagues = {}
@@ -60,13 +90,11 @@ def scramble_handler(event, context):
                                   'scramble_weeks': scramble_weeks,
                                   'wildcard': wildcard,
                                   'playoff_teams': playoff_teams}
-    if 'test' in event:
-        test_scramble(False)
-    else:
-        scramble_update(leagues)
+
+    scramble_update(leagues, actual_points=actual_points)
 
 
-def scramble_update(leagues):
+def scramble_update(leagues, actual_points=False):
     current_week = None
     for league_id, league_data in leagues.items():
         print('Scramble for {}'.format(league_id))
@@ -84,33 +112,76 @@ def scramble_update(leagues):
         playoff_teams = league_data['playoff_teams']
         wildcard = league_data['wildcard']
 
-        # get projected score and minutes left per team
-        matchups = league.scoreboard()
-        teams = []
-        for matchup in matchups:
-            matchup.home_team.projected = matchup.home_score_projected
-            matchup.home_team.minutes_remaining = matchup.home_minutes_remaining
-            teams.append(matchup.home_team)
-            matchup.away_team.projected = matchup.away_score_projected
-            matchup.away_team.minutes_remaining = matchup.away_minutes_remaining
-            teams.append(matchup.away_team)
-        # sort teams by projected score, make scramble table, and post to groupme
-        teams = sorted(teams, key=lambda x: x.projected, reverse=True)
+        # If actual points, use box_score
+        if actual_points:
+            box_scores = league.box_scores()
+            teams = []
+            for box_score in box_scores:
+                # prep home team
+                box_score.home_team.actual = box_score.home_score
+                box_score.home_team.players_remaining = []
+                for player in box_score.home_lineup:
+                    if (player.game_played == 0 and
+                            player.slot_position not in ['BE', 'IR']):
+                        box_score.home_team.players_remaining.append(player)
+                teams.append(box_score.home_team)
 
-        cols = ['Team', 'Proj Points', 'Mins Remaining', 'Diff']
-        lowest_winning_score = teams[int((len(teams) / 2) - 1)].projected
-        highest_losing_score = teams[int(len(teams) / 2)].projected
-        data = []
-        for i, team in enumerate(teams):
-            row = []
-            row.append(team.team_name)
-            row.append(round(team.projected, 1))
-            row.append(team.minutes_remaining)
-            if i < len(teams) / 2:
-                row.append(round(team.projected - highest_losing_score, 1))
-            else:
-                row.append(round(team.projected - lowest_winning_score, 1))
-            data.append(row)
+                # prep away team
+                box_score.away_team.actual = box_score.away_score
+                box_score.away_team.players_remaining = []
+                for player in box_score.away_lineup:
+                    if (player.game_played == 0 and
+                            player.slot_position not in ['BE', 'IR']):
+                        box_score.away_team.players_remaining.append(player)
+                teams.append(box_score.away_team)
+
+            # sort teams by actual score and make scramble table
+            teams = sorted(teams, key=lambda x: x.actual, reverse=True)
+
+            cols = ['Team', 'Actual Points', 'Diff', 'Players Remaining']
+            lowest_winning_score = teams[int((len(teams) / 2) - 1)].actual
+            highest_losing_score = teams[int(len(teams) / 2)].actual
+            data = []
+            for i, team in enumerate(teams):
+                row = []
+                row.append(team.team_name)
+                row.append(round(team.actual, 1))
+                if i < len(teams) / 2:
+                    row.append(round(team.actual - highest_losing_score, 1))
+                else:
+                    row.append(round(team.actual - lowest_winning_score, 1))
+                row.append(',\n'.join(x.name for x in team.players_remaining))
+                data.append(row)
+
+        else:
+            # else, use matchups, as it has better projected points functionality
+            matchups = league.scoreboard()
+            teams = []
+            for matchup in matchups:
+                matchup.home_team.projected = matchup.home_score_projected
+                matchup.home_team.minutes_remaining = matchup.home_minutes_remaining
+                teams.append(matchup.home_team)
+                matchup.away_team.projected = matchup.away_score_projected
+                matchup.away_team.minutes_remaining = matchup.away_minutes_remaining
+                teams.append(matchup.away_team)
+
+            # sort teams by projected score and make scramble table
+            teams = sorted(teams, key=lambda x: x.projected, reverse=True)
+
+            cols = ['Team', 'Proj Points', 'Mins Remaining', 'Diff']
+            lowest_winning_score = teams[int((len(teams) / 2) - 1)].projected
+            highest_losing_score = teams[int(len(teams) / 2)].projected
+            data = []
+            for i, team in enumerate(teams):
+                row = []
+                row.append(team.team_name)
+                row.append(round(team.projected, 1))
+                row.append(team.minutes_remaining)
+                if i < len(teams) / 2:
+                    row.append(round(team.projected - highest_losing_score, 1))
+                else:
+                    row.append(round(team.projected - lowest_winning_score, 1))
+                data.append(row)
         # Make matplotlib table
         green_colors = [(0.0, 1.0, 0.0) for x in range(4)]
         colors = [green_colors for x in range(int(len(teams) / 2))]
@@ -137,7 +208,10 @@ def scramble_update(leagues):
                 team.wins += 1
             else:
                 team.losses += 1
-            team.points_for += team.projected
+            if actual_points:
+                team.points_for += team.actual
+            else:
+                team.points_for += team.projected
         teams = sorted(teams, key=lambda x: x.points_for, reverse=True)
         teams = sorted(teams, key=lambda x: x.wins, reverse=True)
         # find wildcard team
@@ -176,7 +250,7 @@ def scramble_update(leagues):
         post_pic_to_groupme('standings', message, bot_id)
 
 
-def test_scramble(real=False):
+def test_scramble(real=False, actual_points=False):
     if real:
         leagues = {777493: {'bot_id': 'f0d5e4b7e448b15b5a851172c7',
                             'scramble_weeks': [12],
@@ -201,8 +275,8 @@ def test_scramble(real=False):
                             'wildcard': False,
                             'playoff_teams': 4},  # STL
                    }
-    scramble_update(leagues)
+    scramble_update(leagues, actual_points)
 
 
 if __name__ == '__main__':
-    test_scramble()
+    test_scramble(False, True)
