@@ -35,17 +35,17 @@ Resources:
       Layers:
         - !Ref PIPLayer
       Role: !GetAtt LambdaExecutionRole.Arn
-      Events:
-        DailyWaiverCheck:
-          Type: Schedule
-          Properties:
-            # Schedule: rate(10 minutes)  # every 10 minutes
-            Schedule: cron(0/10 18-23 ? * 1 *)  # Every 5 minutes 6:00PM-8:00PM Sunday UTC (10:00AM-12:00PM PST)
-        DailyWaiverCheck2:
-          Type: Schedule
-          Properties:
-            # Schedule: rate(10 minutes)  # every 10 minutes
-            Schedule: cron(0/10 0-5 ? * 3 *)  # Every hour 1AM - 5:30AM UTC (5PM- 9:00PM PST Monday)
+#      Events:
+#        DailyWaiverCheck:
+#          Type: Schedule
+#          Properties:
+#            # Schedule: rate(10 minutes)  # every 10 minutes
+#            Schedule: cron(0/10 18-23 ? * 1 *)  # Every 5 minutes 6:00PM-8:00PM Sunday UTC (10:00AM-12:00PM PST)
+#        DailyWaiverCheck2:
+#          Type: Schedule
+#          Properties:
+#            # Schedule: rate(10 minutes)  # every 10 minutes
+#            Schedule: cron(0/10 0-5 ? * 3 *)  # Every hour 1AM - 5:30AM UTC (5PM- 9:00PM PST Monday)
   ScrambleFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
