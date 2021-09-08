@@ -1,3 +1,5 @@
+from json import dumps
+
 import requests
 import boto3
 from espn_api.football import League
@@ -61,7 +63,7 @@ def waiver_check(event, context):
         responses = []
         for message in messages:
             data = {'bot_id': bot_id, 'text': message}
-            responses.append(requests.post(groupme_endpoint, data=data))
+            responses.append(requests.post(groupme_endpoint, data=dumps(data)))
 
         update_expression = 'SET last_report_time = :l'
         expression_attribute_values = {':l': {'S': str(time)}}
@@ -72,4 +74,5 @@ def waiver_check(event, context):
                        ReturnConsumedCapacity='NONE')
 
         print('Posted new report. League: {}  Time: {}'.format(league_id, time))
+        print(f'GroupMe API responses: {responses}')
     return
