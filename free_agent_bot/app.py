@@ -26,7 +26,7 @@ def waiver_check(event, context):
     for league_id, league_data in leagues.items():
         bot_id = league_data['bot_id']
         last_report_time = league_data['last_report_time']
-        year = 2020
+        year = 2021
         league = League(league_id, year, espn_username, espn_password)
 
         reports = league.free_agent_auction_report()
